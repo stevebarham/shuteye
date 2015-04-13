@@ -4,8 +4,6 @@ Shuteye is a library to build RESTful API clients. It has no dependencies other 
 [RFC 6570](https://tools.ietf.org/html/rfc6570) for URI template construction, and provides a fluent API to
 execute HTTP requests.
 
-[![Build Status](https://travis-ci.org/stevebarham/shuteye.svg?branch=master)](https://travis-ci.org/stevebarham/shuteye)
-
 Motivation
 ----------
 Shuteye's design goal is to provide a library which:
