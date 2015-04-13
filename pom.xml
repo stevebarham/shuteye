@@ -4,7 +4,7 @@
 
     <groupId>net.ethx.shuteye</groupId>
     <artifactId>shuteye</artifactId>
-    <version>0.1.0</version>
+    <version>0.2.0-SNAPSHOT</version>
 
     <licenses>
         <license>
@@ -18,7 +18,7 @@
         <connection>scm:git:git@github.com:stevebarham/shuteye.git</connection>
         <developerConnection>scm:git:git@github.com:stevebarham/shuteye.git</developerConnection>
         <url>https://github.com/stevebarham/shuteye</url>
-        <tag>shuteye-0.1.0</tag>
+        <tag>HEAD</tag>
     </scm>
 
     <distributionManagement>
