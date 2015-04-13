@@ -17,6 +17,7 @@
 
     <scm>
         <connection>scm:git:git@github.com:stevebarham/shuteye.git</connection>
+        <developerConnection>scm:git:git@github.com:stevebarham/shuteye.git</developerConnection>
         <url>https://github.com/stevebarham/shuteye</url>
         <tag>HEAD</tag>
     </scm>
