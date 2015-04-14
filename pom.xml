@@ -4,7 +4,7 @@
 
     <groupId>net.ethx.shuteye</groupId>
     <artifactId>shuteye</artifactId>
-    <version>0.1.1</version>
+    <version>0.1.2-SNAPSHOT</version>
 
     <name>Shuteye</name>
     <description>Sane, zero-dependency library for building REST clients</description>
@@ -31,7 +31,7 @@
         <connection>scm:git:git@github.com:stevebarham/shuteye.git</connection>
         <developerConnection>scm:git:git@github.com:stevebarham/shuteye.git</developerConnection>
         <url>https://github.com/stevebarham/shuteye</url>
-        <tag>shuteye-0.1.1</tag>
+        <tag>HEAD</tag>
     </scm>
 
     <distributionManagement>
