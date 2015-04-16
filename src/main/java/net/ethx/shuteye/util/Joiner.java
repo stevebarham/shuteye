@@ -1,6 +1,6 @@
 package net.ethx.shuteye.util;
 
-public class Joiner {
+public abstract class Joiner {
     public static void joinTo(final Iterable<?> values, final String separator, final StringBuilder out) {
         for (Object value : values) {
             if (value != null) {

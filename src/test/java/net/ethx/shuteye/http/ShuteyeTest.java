@@ -2,6 +2,7 @@ package net.ethx.shuteye.http;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import net.ethx.shuteye.http.except.ResponseException;
 import net.ethx.shuteye.http.response.Response;
 import net.ethx.shuteye.http.response.ResponseTransformer;
 import net.ethx.shuteye.uri.UriTemplate;
@@ -11,12 +12,13 @@ import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
 import java.util.UUID;
 
-import static java.util.Collections.singletonMap;
+import static net.ethx.shuteye.http.response.Transformers.string;
 import static org.junit.Assert.*;
 
 public class ShuteyeTest {
@@ -24,8 +26,8 @@ public class ShuteyeTest {
 
     @Test
     public void error() {
-        for (int i = 300; i < 600; i += 100) {
-            final Response response = UriTemplate.build(BASE_URI + "/status/{code}", singletonMap("code", i))
+        for (int i = 400; i < 700; i += 100) {
+            final Response response = UriTemplate.create(BASE_URI + "/status/{code}", i)
                                                  .get()
                                                  .execute();
 
@@ -54,7 +56,7 @@ public class ShuteyeTest {
     @Test
     public void statusCode() {
         for (int i = 200; i < 210; i++) {
-            assertEquals(i, UriTemplate.build(BASE_URI + "/status/{code}", singletonMap("code", i))
+            assertEquals(i, UriTemplate.create(BASE_URI + "/status/{code}", i)
                                        .get()
                                        .execute().statusCode());
         }
@@ -88,7 +90,7 @@ public class ShuteyeTest {
         args.put("foo", "bar");
         args.put("uuid", uuid.toString());
 
-        final Response response = UriTemplate.build(BASE_URI + "/response-headers{?args*}", singletonMap("args", args))
+        final Response response = UriTemplate.create(BASE_URI + "/response-headers{?args*}", args)
                                              .get()
                                              .execute();
 
@@ -136,6 +138,35 @@ public class ShuteyeTest {
                                                      .body(new ByteArrayInputStream(data))
                                                      .as(json())
                                                      .get("data").textValue().substring("data:application/octet-stream;base64,".length())));
+    }
+
+    @Test(expected = ResponseException.class)
+    public void failure() {
+        UriTemplate.create(BASE_URI + "/status/{code}", 404).get().as(string());
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void connectTimeout() {
+        ShuteyeContext.defaultContext()
+                      .with(ShuteyeOption.CONNECT_TIMEOUT_MILLIS, -1)
+                      .get(BASE_URI)
+                      .as(string());
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void readTimeout() {
+        ShuteyeContext.defaultContext()
+                      .with(ShuteyeOption.READ_TIMEOUT_MILLIS, -2)
+                      .get(BASE_URI)
+                      .as(string());
+    }
+
+    @Test
+    public void utf8() {
+        final String uri = BASE_URI + "/encoding/utf8";
+        final String explicit = Shuteye.get(uri).as(string(Charset.forName("utf8")));
+        final String implicit = Shuteye.get(uri).as(string());
+        assertEquals(explicit, implicit);
     }
 
     private void assertOK(final Response response) {

@@ -62,22 +62,17 @@ Code Example
 ------------
 
 ### Constructing a URI template
+Templates can be parsed and processed in a single step, by passing the variables alongside the template, either
+as varargs parameters, or via a simple wrapper around a Map
 
-Templates can be parsed and processed in a single step, by passing the variables alongside the template:
+    String uri = UriTemplate.process("https://api.github.com/repos{/user,repo,function,id}", Vars.wrap(vars));
+    String uri2 = UriTemplate.process("https://api.github.com/repos{/user,repo,function,id}", "stevebarham", "jcodemodel", "commits");
 
-    Map<String, Object> vars = new HashMap<>();
-    vars.put("user", "stevebarham");
-    vars.put("repo", "jcodemodel");
-    vars.put("function", "commits");
-
-    String uri = UriTemplate.process("https://api.github.com/repos{/user,repo,function,id}", vars)
-
-This produces the following URI:
+Both of these methods will produce the following URI:
 
     https://api.github.com/repos/stevebarham/jcodemodel/commits
 
 ### Compiling a URI template, and processing it with different variables
-
 When a template will be used multiple times, it's probably more efficient to compile it in advance, then just
 process it with different variables.
 
@@ -87,10 +82,10 @@ process it with different variables.
     vars.put("user", "stevebarham");
     vars.put("repo", "jcodemodel");
     vars.put("function", "commits");
-    String uri1 = template.process(vars);
+    String uri1 = template.process(Vars.wrap(vars));
 
     vars.put("user", "phax");
-    String uri2 = template.process(vars);
+    String uri2 = template.process(Vars.wrap(vars));
 
 This produces the following URIs:
 

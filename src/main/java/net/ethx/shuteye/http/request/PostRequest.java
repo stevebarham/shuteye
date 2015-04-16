@@ -1,7 +1,7 @@
 package net.ethx.shuteye.http.request;
 
 import net.ethx.shuteye.http.ContentType;
-import net.ethx.shuteye.util.Encodings;
+import net.ethx.shuteye.http.ShuteyeContext;
 import net.ethx.shuteye.util.Preconditions;
 
 import java.io.*;
@@ -9,11 +9,13 @@ import java.net.HttpURLConnection;
 import java.net.URLConnection;
 import java.nio.charset.Charset;
 
+import static net.ethx.shuteye.http.ShuteyeOption.*;
+
 public class PostRequest extends Request {
     private Entity entity = null;
 
-    public PostRequest(final String method, final String uri) {
-        super(method, uri);
+    public PostRequest(final ShuteyeContext context, final String method, final String uri) {
+        super(context, method, uri);
     }
 
     @Override
@@ -35,7 +37,7 @@ public class PostRequest extends Request {
     }
 
     public PostRequest field(final String field, final String value) {
-        return field(field, value, Encodings.UTF8);
+        return field(field, value, DEFAULT_STRING_ENCODING.get(context().options()));
     }
 
     public PostRequest field(final String field, final String value, final Charset charset) {
@@ -48,7 +50,7 @@ public class PostRequest extends Request {
     }
 
     public PostRequest body(final InputStream stream) {
-        return body(stream, ContentType.APPLICATION_OCTET_STREAM);
+        return body(stream, DEFAULT_STREAM_CONTENT_TYPE.get(context().options()));
     }
 
     public PostRequest body(final InputStream stream, final ContentType contentType) {
@@ -58,15 +60,15 @@ public class PostRequest extends Request {
     }
 
     public PostRequest body(final String body) {
-        return body(body, ContentType.TEXT_PLAIN, Encodings.UTF8);
+        return body(body, DEFAULT_STRING_CONTENT_TYPE.get(context().options()), DEFAULT_STRING_ENCODING.get(context().options()));
     }
 
     public PostRequest body(final String body, final Charset charset) {
-        return body(body, ContentType.TEXT_PLAIN, charset);
+        return body(body, DEFAULT_STRING_CONTENT_TYPE.get(context().options()), charset);
     }
 
     public PostRequest body(final String body, final ContentType contentType) {
-        return body(body, contentType, Encodings.UTF8);
+        return body(body, contentType, DEFAULT_STRING_ENCODING.get(context().options()));
     }
 
     public PostRequest body(final String body, final ContentType contentType, final Charset charset) {
@@ -90,7 +92,7 @@ public class PostRequest extends Request {
 
     private ContentType guessContentType(final String fileName) {
         final String maybeContentType = URLConnection.guessContentTypeFromName(fileName);
-        return maybeContentType == null ? ContentType.APPLICATION_OCTET_STREAM : ContentType.parse(maybeContentType);
+        return maybeContentType == null ? DEFAULT_STREAM_CONTENT_TYPE.get(context().options()) : ContentType.parse(maybeContentType);
     }
 
     @Override

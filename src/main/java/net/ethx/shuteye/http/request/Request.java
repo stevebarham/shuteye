@@ -1,6 +1,9 @@
 package net.ethx.shuteye.http.request;
 
 import net.ethx.shuteye.http.Headers;
+import net.ethx.shuteye.http.ShuteyeContext;
+import net.ethx.shuteye.http.ShuteyeOption;
+import net.ethx.shuteye.http.except.ShuteyeException;
 import net.ethx.shuteye.http.response.Response;
 import net.ethx.shuteye.http.response.ResponseTransformer;
 import net.ethx.shuteye.util.Preconditions;
@@ -9,21 +12,28 @@ import net.ethx.shuteye.util.Streams;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.concurrent.TimeUnit;
+import java.util.zip.DeflaterInputStream;
 import java.util.zip.GZIPOutputStream;
 
 public abstract class Request {
+    private final ShuteyeContext context;
     private final String method;
     private final String url;
     private final MutableHeaders headers = new MutableHeaders();
 
-    public Request(final String method, final String url) {
+    public Request(final ShuteyeContext context, final String method, final String url) {
+        this.context = context;
         this.method = method;
         this.url = url;
 
         header("Accept-Encoding", "gzip");
+    }
+
+    public ShuteyeContext context() {
+        return context;
     }
 
     public Request header(final String header, final String value) {
@@ -35,7 +45,7 @@ public abstract class Request {
         try {
             return execute().as(transformer);
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new ShuteyeException(String.format("Could not convert response using %s", transformer), e);
         }
     }
 
@@ -44,12 +54,11 @@ public abstract class Request {
             final URL url = new URL(url());
             Preconditions.checkArgument(url.getProtocol().startsWith("http"), "Only HTTP(S) protocol supported for URI, found %s", url);
 
-            //  todo: customisable options
             final HttpURLConnection connection = (HttpURLConnection) url.openConnection();
             connection.setRequestMethod(method());
             connection.setInstanceFollowRedirects("GET".equals(method()));
-            connection.setConnectTimeout((int) TimeUnit.SECONDS.toMillis(10));
-            connection.setReadTimeout((int) TimeUnit.SECONDS.toMillis(60));
+            connection.setConnectTimeout(ShuteyeOption.CONNECT_TIMEOUT_MILLIS.get(context.options()));
+            connection.setReadTimeout(ShuteyeOption.READ_TIMEOUT_MILLIS.get(context.options()));
 
             for (String header : headers.headerNames()) {
                 for (String value : headers.all(header)) {
@@ -66,17 +75,26 @@ public abstract class Request {
 
                 final ByteArrayOutputStream out = new ByteArrayOutputStream();
                 final String encoding = responseHeaders.first("Content-Encoding");
-                final InputStream encoded = statusCode < 300 ? connection.getInputStream() : connection.getErrorStream();
+
+                //  todo: follow redirects
+                final InputStream encoded = statusCode < 400 ? connection.getInputStream() : connection.getErrorStream();
                 if (encoded != null) {
+                    final InputStream source; final OutputStream dest;
                     if ("gzip".equalsIgnoreCase(encoding)) {
-                        Streams.copy(encoded, out);
+                        source = encoded;
+                        dest = out;
+                    } else if ("deflate".equalsIgnoreCase(encoding)) {
+                        source = new DeflaterInputStream(encoded);
+                        dest = new GZIPOutputStream(out);
                     } else {
-                        final GZIPOutputStream gz = new GZIPOutputStream(out);
-                        try {
-                            Streams.copy(encoded, gz);
-                        } finally {
-                            gz.close();
-                        }
+                        source = encoded;
+                        dest = new GZIPOutputStream(out);
+                    }
+                    try {
+                        Streams.copy(source, dest);
+                    } finally {
+                        source.close();
+                        dest.close();
                     }
                 }
 
@@ -85,7 +103,7 @@ public abstract class Request {
                 connection.disconnect();
             }
         } catch (IOException ie) {
-            throw new IllegalStateException("Could not execute request", ie);
+            throw new ShuteyeException(String.format("Could not execute request to %s", url), ie);
         }
     }
 

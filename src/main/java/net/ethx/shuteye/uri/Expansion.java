@@ -37,8 +37,12 @@ class Expansion {
         this.prefix = prefix;
     }
 
-    public String expand(final Context context) {
-        final Object value = context.args().get(variable);
+    String variable() {
+        return variable;
+    }
+
+    public String expand(final Vars holder) {
+        final Object value = holder.args().get(variable);
         if (value == null) {
             return null;
         }

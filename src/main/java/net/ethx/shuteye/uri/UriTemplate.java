@@ -1,42 +1,124 @@
 package net.ethx.shuteye.uri;
 
-import net.ethx.shuteye.http.request.RequestBuilder;
+import net.ethx.shuteye.http.except.TemplateException;
+import net.ethx.shuteye.http.request.BaseUri;
+import net.ethx.shuteye.util.Shadows;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
+import static java.lang.String.format;
+
+@Shadows(UriTemplateContext.class)
 public class UriTemplate {
+    public static BaseUri create(final String template, final Object... vars) throws IllegalStateException, IllegalArgumentException {
+        return UriTemplateContext.defaultContext().compile(template).createUri(vars);
+    }
+
+    public static BaseUri create(final String template, final Vars vars) throws IllegalStateException, IllegalArgumentException {
+        return UriTemplateContext.defaultContext().compile(template).createUri(vars);
+    }
+
+    public static String process(final String template, final Object... vars) throws IllegalStateException, IllegalArgumentException {
+        return UriTemplateContext.defaultContext().compile(template).process(vars);
+    }
+
+    public static String process(final String template, final Vars vars) throws IllegalStateException, IllegalArgumentException {
+        return UriTemplateContext.defaultContext().compile(template).process(vars);
+    }
+
+    public static UriTemplate compile(final String template) throws IllegalStateException, IllegalArgumentException {
+        return UriTemplateContext.defaultContext().compile(template);
+    }
+
+    private final UriTemplateContext context;
     private final List<Emittable> emittables;
+    private final List<String> variableNames;
 
-    public static RequestBuilder build(final String input, final Map<String, ?> variables) throws IllegalStateException, IllegalArgumentException {
-        return parse(input).build(variables);
-    }
-
-    public static String process(final String input, final Map<String, ?> variables) throws IllegalStateException, IllegalArgumentException {
-        return parse(input).process(variables);
-    }
-
-    public static UriTemplate parse(final String input) throws IllegalStateException, IllegalArgumentException {
-        return new UriTemplate(UriTemplateParser.parse(input));
-    }
-
-    UriTemplate(final List<Emittable> emittables) {
+    UriTemplate(final UriTemplateContext context, final List<Emittable> emittables) {
+        this.context = context;
         this.emittables = Collections.unmodifiableList(emittables);
+
+        final List<String> variableNamesBuilder = new ArrayList<String>();
+        for (Emittable emittable : emittables) {
+            variableNamesBuilder.addAll(emittable.variableNames());
+        }
+        this.variableNames = Collections.unmodifiableList(variableNamesBuilder);
     }
 
-    public String process(final Map<String, ?> variables) {
+    List<String> variableNames() {
+        return variableNames;
+    }
+
+    public <T> UriTemplate with(final UriTemplateOption<T> option, final T value) {
+        return new UriTemplate(context.with(option, value), emittables);
+    }
+
+    public String process(final Object... vars) {
+        final Map<String, Object> variables = new LinkedHashMap<String, Object>(variableNames.size());
+        int i = 0;
+        for (String variableName : variableNames) {
+            variables.put(variableName, i < vars.length ? vars[i] : null);
+            i++;
+        }
+
+        if (vars.length < variableNames.size() && !UriTemplateOption.AllowMissingVariablesForVarArg.get(context.options())) {
+            throw new TemplateException(format("!%s: Not enough template variables provided. Required %s, found %s. Variables: %s", UriTemplateOption.AllowMissingVariablesForVarArg, variableNames, variableNames.subList(0, vars.length), variables));
+        }
+
+        if (vars.length > variableNames.size() && !UriTemplateOption.AllowExtraVariablesForVarArg.get(context.options())) {
+            final Object[] remainder = new Object[vars.length - variableNames.size()];
+            System.arraycopy(vars, variableNames.size(), remainder, 0, vars.length - variableNames.size());
+            throw new TemplateException(format("!%s: Too many template variables provided. Required: %s, extra variables: %s", UriTemplateOption.AllowExtraVariablesForVarArg, variableNames, Arrays.toString(remainder)));
+        }
+
+        return processValidatedVariables(variables);
+    }
+
+    public String process(final Vars vars) {
+        final Map<String, ?> variables = vars.args();
+        if (!UriTemplateOption.AllowMissingVariablesForMap.get(context.options())) {
+            final Collection<String> missing = new ArrayList<String>();
+            for (String variableName : variableNames) {
+                if (!variables.containsKey(variableName)) {
+                    missing.add(variableName);
+                }
+            }
+
+            if (!missing.isEmpty()) {
+                throw new TemplateException(format("!%s: Not enough template variables provided. Required: %s, provided: %s", UriTemplateOption.AllowMissingVariablesForMap, variableNames, variables));
+            }
+        }
+
+        if (!UriTemplateOption.AllowExtraVariablesForMap.get(context.options())) {
+            final Set<String> remaining = new HashSet<String>(variables.keySet());
+            for (String variableName : variableNames) {
+                remaining.remove(variableName);
+            }
+
+            if (!remaining.isEmpty()) {
+                throw new TemplateException(format("!%s: Too many template variables provided. Required: %s, provided: %s, extra variables: %s", UriTemplateOption.AllowExtraVariablesForMap, variableNames, variables, remaining));
+            }
+        }
+
+        return processValidatedVariables(variables);
+    }
+
+    private String processValidatedVariables(final Map<String, ?> variables) {
         final StringBuilder out = new StringBuilder();
 
-        final Context context = new Context(variables);
+        final Vars holder = new Vars(variables);
         for (Emittable emittable : emittables) {
-            emittable.emit(context, out);
+            emittable.emit(holder, out);
         }
 
         return out.toString();
     }
 
-    public RequestBuilder build(final Map<String, ?> variables) {
-        return new RequestBuilder(process(variables));
+    public BaseUri createUri(final Object... args) {
+        return new BaseUri(UriTemplateOption.DefaultShuteyeContext.get(context.options()), process(args));
+    }
+
+    public BaseUri createUri(final Map<String, ?> variables) {
+        return new BaseUri(UriTemplateOption.DefaultShuteyeContext.get(context.options()), process(variables));
     }
 }

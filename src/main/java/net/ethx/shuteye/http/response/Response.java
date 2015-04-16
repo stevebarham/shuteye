@@ -1,12 +1,10 @@
 package net.ethx.shuteye.http.response;
 
 import net.ethx.shuteye.http.Headers;
-import net.ethx.shuteye.util.Streams;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.zip.GZIPInputStream;
 
@@ -24,7 +22,7 @@ public class Response {
     }
 
     public boolean isError() {
-        return statusCode >= 300;
+        return statusCode >= 400;
     }
 
     public int statusCode() {
@@ -44,8 +42,7 @@ public class Response {
     }
 
     public String textValue() throws IOException {
-        //  todo: identify charset from response
-        return Streams.toString(stream(), Charset.defaultCharset());
+        return as(Transformers.string());
     }
 
     public <T> T as(final ResponseTransformer<T> transformer) throws IOException {
