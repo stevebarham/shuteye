@@ -1,6 +1,6 @@
 package net.ethx.shuteye.util;
 
-public class Preconditions {
+public abstract class Preconditions {
     public static void checkArgument(final boolean condition, final String message, final Object... args) {
         if (!condition) {
             throw new IllegalArgumentException(String.format(message, args));

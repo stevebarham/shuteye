@@ -1,5 +1,8 @@
 package net.ethx.shuteye.uri;
 
+import java.util.Collections;
+import java.util.List;
+
 import static java.lang.String.format;
 
 class Literal implements Emittable {
@@ -10,8 +13,13 @@ class Literal implements Emittable {
     }
 
     @Override
-    public void emit(final Context context, final StringBuilder out) {
+    public void emit(final Vars holder, final StringBuilder out) {
         out.append(literal);
+    }
+
+    @Override
+    public List<String> variableNames() {
+        return Collections.emptyList();
     }
 
     @Override
