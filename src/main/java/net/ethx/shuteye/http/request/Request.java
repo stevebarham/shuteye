@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.concurrent.TimeUnit;
 import java.util.zip.GZIPOutputStream;
 
 public abstract class Request {
@@ -43,9 +44,12 @@ public abstract class Request {
             final URL url = new URL(url());
             Preconditions.checkArgument(url.getProtocol().startsWith("http"), "Only HTTP(S) protocol supported for URI, found %s", url);
 
+            //  todo: customisable options
             final HttpURLConnection connection = (HttpURLConnection) url.openConnection();
             connection.setRequestMethod(method());
             connection.setInstanceFollowRedirects("GET".equals(method()));
+            connection.setConnectTimeout((int) TimeUnit.SECONDS.toMillis(10));
+            connection.setReadTimeout((int) TimeUnit.SECONDS.toMillis(60));
 
             for (String header : headers.headerNames()) {
                 for (String value : headers.all(header)) {
