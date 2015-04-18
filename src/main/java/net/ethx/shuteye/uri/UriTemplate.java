@@ -7,6 +7,7 @@ import net.ethx.shuteye.util.Shadows;
 import java.util.*;
 
 import static java.lang.String.format;
+import static net.ethx.shuteye.uri.UriTemplateOption.*;
 
 @Shadows(UriTemplateContext.class)
 public class UriTemplate {
@@ -61,14 +62,14 @@ public class UriTemplate {
             i++;
         }
 
-        if (vars.length < variableNames.size() && !UriTemplateOption.AllowMissingVariablesForVarArg.get(context.options())) {
-            throw new TemplateException(format("!%s: Not enough template variables provided. Required %s, found %s. Variables: %s", UriTemplateOption.AllowMissingVariablesForVarArg, variableNames, variableNames.subList(0, vars.length), variables));
+        if (vars.length < variableNames.size() && !ALLOW_MISSING_VARS_IN_VARARG.get(context.options())) {
+            throw new TemplateException(format("!%s: Not enough template variables provided. Required %s, found %s. Variables: %s", ALLOW_MISSING_VARS_IN_VARARG, variableNames, variableNames.subList(0, vars.length), variables));
         }
 
-        if (vars.length > variableNames.size() && !UriTemplateOption.AllowExtraVariablesForVarArg.get(context.options())) {
+        if (vars.length > variableNames.size() && !ALLOW_EXTRA_VARS_IN_VARARG.get(context.options())) {
             final Object[] remainder = new Object[vars.length - variableNames.size()];
             System.arraycopy(vars, variableNames.size(), remainder, 0, vars.length - variableNames.size());
-            throw new TemplateException(format("!%s: Too many template variables provided. Required: %s, extra variables: %s", UriTemplateOption.AllowExtraVariablesForVarArg, variableNames, Arrays.toString(remainder)));
+            throw new TemplateException(format("!%s: Too many template variables provided. Required: %s, extra variables: %s", ALLOW_EXTRA_VARS_IN_VARARG, variableNames, Arrays.toString(remainder)));
         }
 
         return processValidatedVariables(variables);
@@ -76,7 +77,7 @@ public class UriTemplate {
 
     public String process(final Vars vars) {
         final Map<String, ?> variables = vars.args();
-        if (!UriTemplateOption.AllowMissingVariablesForMap.get(context.options())) {
+        if (!ALLOW_MISSING_VARS_IN_MAP.get(context.options())) {
             final Collection<String> missing = new ArrayList<String>();
             for (String variableName : variableNames) {
                 if (!variables.containsKey(variableName)) {
@@ -85,18 +86,18 @@ public class UriTemplate {
             }
 
             if (!missing.isEmpty()) {
-                throw new TemplateException(format("!%s: Not enough template variables provided. Required: %s, provided: %s", UriTemplateOption.AllowMissingVariablesForMap, variableNames, variables));
+                throw new TemplateException(format("!%s: Not enough template variables provided. Required: %s, provided: %s", ALLOW_MISSING_VARS_IN_MAP, variableNames, variables));
             }
         }
 
-        if (!UriTemplateOption.AllowExtraVariablesForMap.get(context.options())) {
+        if (!ALLOW_EXTRA_VARS_IN_MAP.get(context.options())) {
             final Set<String> remaining = new HashSet<String>(variables.keySet());
             for (String variableName : variableNames) {
                 remaining.remove(variableName);
             }
 
             if (!remaining.isEmpty()) {
-                throw new TemplateException(format("!%s: Too many template variables provided. Required: %s, provided: %s, extra variables: %s", UriTemplateOption.AllowExtraVariablesForMap, variableNames, variables, remaining));
+                throw new TemplateException(format("!%s: Too many template variables provided. Required: %s, provided: %s, extra variables: %s", ALLOW_EXTRA_VARS_IN_MAP, variableNames, variables, remaining));
             }
         }
 
@@ -115,10 +116,10 @@ public class UriTemplate {
     }
 
     public BaseUri createUri(final Object... args) {
-        return new BaseUri(UriTemplateOption.DefaultShuteyeContext.get(context.options()), process(args));
+        return new BaseUri(DefaultShuteyeContext.get(context.options()), process(args));
     }
 
     public BaseUri createUri(final Map<String, ?> variables) {
-        return new BaseUri(UriTemplateOption.DefaultShuteyeContext.get(context.options()), process(variables));
+        return new BaseUri(DefaultShuteyeContext.get(context.options()), process(variables));
     }
 }

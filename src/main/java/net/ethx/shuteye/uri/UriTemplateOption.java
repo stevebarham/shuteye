@@ -4,11 +4,11 @@ import net.ethx.shuteye.http.ShuteyeContext;
 import net.ethx.shuteye.options.Option;
 
 public class UriTemplateOption<T> extends Option<T> {
-    public static final UriTemplateOption<Boolean> AllowExtraVariablesForVarArg = new UriTemplateOption<Boolean>("AllowExtraVariablesForVarArg", Boolean.class, Boolean.FALSE);
-    public static final UriTemplateOption<Boolean> AllowMissingVariablesForVarArg = new UriTemplateOption<Boolean>("AllowMissingVariablesForVarArg", Boolean.class, Boolean.FALSE);
+    public static final UriTemplateOption<Boolean> ALLOW_EXTRA_VARS_IN_VARARG = new UriTemplateOption<Boolean>("ALLOW_EXTRA_VARS_IN_VARARG", Boolean.class, Boolean.FALSE);
+    public static final UriTemplateOption<Boolean> ALLOW_MISSING_VARS_IN_VARARG = new UriTemplateOption<Boolean>("ALLOW_MISSING_VARS_IN_VARARG", Boolean.class, Boolean.FALSE);
 
-    public static final UriTemplateOption<Boolean> AllowExtraVariablesForMap = new UriTemplateOption<Boolean>("AllowExtraVariablesForMap", Boolean.class, Boolean.TRUE);
-    public static final UriTemplateOption<Boolean> AllowMissingVariablesForMap = new UriTemplateOption<Boolean>("AllowMissingVariablesForMap", Boolean.class, Boolean.FALSE);
+    public static final UriTemplateOption<Boolean> ALLOW_EXTRA_VARS_IN_MAP = new UriTemplateOption<Boolean>("ALLOW_EXTRA_VARS_IN_MAP", Boolean.class, Boolean.TRUE);
+    public static final UriTemplateOption<Boolean> ALLOW_MISSING_VARS_IN_MAP = new UriTemplateOption<Boolean>("ALLOW_MISSING_VARS_IN_MAP", Boolean.class, Boolean.FALSE);
 
     public static final UriTemplateOption<ShuteyeContext> DefaultShuteyeContext = new UriTemplateOption<ShuteyeContext>("DefaultShuteyeContext", ShuteyeContext.class, new OptionSupplier<ShuteyeContext>() {
         @Override

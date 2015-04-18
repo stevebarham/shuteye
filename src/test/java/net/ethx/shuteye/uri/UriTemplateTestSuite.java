@@ -28,7 +28,7 @@ public class UriTemplateTestSuite {
         final String result;
         try {
             result = UriTemplateContext.defaultContext()
-                                       .with(UriTemplateOption.AllowMissingVariablesForMap, Boolean.TRUE)
+                                       .with(UriTemplateOption.ALLOW_MISSING_VARS_IN_MAP, Boolean.TRUE)
                                        .process(testcase.template, Vars.wrap(testcase.variables));
             if (expectException) {
                 Assert.fail(describe(result) + "Expansion set empty, expected exception");
