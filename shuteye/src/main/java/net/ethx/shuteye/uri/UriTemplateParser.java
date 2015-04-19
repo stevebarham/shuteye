@@ -8,7 +8,7 @@ import java.util.Arrays;
 import java.util.List;
 
 class UriTemplateParser {
-    public static List<Emittable> parse(final String input) {
+    static List<Emittable> parse(final String input) {
         final List<Emittable> ret = new ArrayList<Emittable>();
 
         final CharBuffer buffer = CharBuffer.wrap(input);

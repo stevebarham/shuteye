@@ -19,11 +19,11 @@ public class UriTemplateCompiler {
     }
 
     public String process(final String template, final Object... vars) throws IllegalStateException, IllegalArgumentException {
-        return compile(template).process(vars);
+        return compile(template).expand(vars);
     }
 
     public String process(final String template, final Vars vars) throws IllegalStateException, IllegalArgumentException {
-        return compile(template).process(vars);
+        return compile(template).expand(vars);
     }
 
     public UriTemplate compile(final String template) throws IllegalStateException, IllegalArgumentException {
