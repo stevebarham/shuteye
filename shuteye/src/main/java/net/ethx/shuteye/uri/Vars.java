@@ -3,6 +3,9 @@ package net.ethx.shuteye.uri;
 import java.util.Collections;
 import java.util.Map;
 
+/**
+ * Name-value holder for variables used in uri templates.
+ */
 public class Vars {
     private final Map<String, ?> args;
 

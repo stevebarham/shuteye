@@ -32,7 +32,7 @@ public class HttpTemplate {
     }
 
     public Request get(final UriTemplate template, final Object... vars) {
-        return new Request(this, "GET", template.process(vars));
+        return new Request(this, "GET", template.expand(vars));
     }
 
     public Request get(final String uri, final Vars vars) {
@@ -40,7 +40,7 @@ public class HttpTemplate {
     }
 
     public Request get(final UriTemplate template, final Vars vars) {
-        return new Request(this, "GET", template.process(vars));
+        return new Request(this, "GET", template.expand(vars));
     }
 
     public Request head(final String uri, final Object... vars) {
@@ -48,7 +48,7 @@ public class HttpTemplate {
     }
 
     public Request head(final UriTemplate template, final Object... vars) {
-        return new Request(this, "HEAD", template.process(vars));
+        return new Request(this, "HEAD", template.expand(vars));
     }
 
     public Request head(final String uri, final Vars vars) {
@@ -56,7 +56,7 @@ public class HttpTemplate {
     }
 
     public Request head(final UriTemplate template, final Vars vars) {
-        return new Request(this, "HEAD", template.process(vars));
+        return new Request(this, "HEAD", template.expand(vars));
     }
 
     public PostingRequest post(final String uri, final Object... vars) {
@@ -64,7 +64,7 @@ public class HttpTemplate {
     }
 
     public PostingRequest post(final UriTemplate template, final Object... vars) {
-        return new PostingRequest(this, "POST", template.process(vars));
+        return new PostingRequest(this, "POST", template.expand(vars));
     }
 
     public PostingRequest post(final String uri, final Vars vars) {
@@ -72,7 +72,7 @@ public class HttpTemplate {
     }
 
     public PostingRequest post(final UriTemplate template, final Vars vars) {
-        return new PostingRequest(this, "POST", template.process(vars));
+        return new PostingRequest(this, "POST", template.expand(vars));
     }
 
     public PostingRequest put(final String uri, final Object... vars) {
@@ -80,7 +80,7 @@ public class HttpTemplate {
     }
 
     public PostingRequest put(final UriTemplate template, final Object... vars) {
-        return new PostingRequest(this, "PUT", template.process(vars));
+        return new PostingRequest(this, "PUT", template.expand(vars));
     }
 
     public PostingRequest put(final String uri, final Vars vars) {
@@ -88,7 +88,7 @@ public class HttpTemplate {
     }
 
     public PostingRequest put(final UriTemplate template, final Vars vars) {
-        return new PostingRequest(this, "PUT", template.process(vars));
+        return new PostingRequest(this, "PUT", template.expand(vars));
     }
 
     public PostingRequest patch(final String uri, final Object... vars) {
@@ -96,7 +96,7 @@ public class HttpTemplate {
     }
 
     public PostingRequest patch(final UriTemplate template, final Object... vars) {
-        return new PostingRequest(this, "PATCH", template.process(vars));
+        return new PostingRequest(this, "PATCH", template.expand(vars));
     }
 
     public PostingRequest patch(final String uri, final Vars vars) {
@@ -104,7 +104,7 @@ public class HttpTemplate {
     }
 
     public PostingRequest patch(final UriTemplate template, final Vars vars) {
-        return new PostingRequest(this, "PATCH", template.process(vars));
+        return new PostingRequest(this, "PATCH", template.expand(vars));
     }
 
     public PostingRequest delete(final String uri, final Object... vars) {
@@ -112,7 +112,7 @@ public class HttpTemplate {
     }
 
     public PostingRequest delete(final UriTemplate template, final Object... vars) {
-        return new PostingRequest(this, "DELETE", template.process(vars));
+        return new PostingRequest(this, "DELETE", template.expand(vars));
     }
 
     public PostingRequest delete(final String uri, final Vars vars) {
@@ -120,7 +120,7 @@ public class HttpTemplate {
     }
 
     public PostingRequest delete(final UriTemplate template, final Vars vars) {
-        return new PostingRequest(this, "DELETE", template.process(vars));
+        return new PostingRequest(this, "DELETE", template.expand(vars));
     }
 
     public PostingRequest options(final String uri, final Object... vars) {
@@ -128,7 +128,7 @@ public class HttpTemplate {
     }
 
     public PostingRequest options(final UriTemplate template, final Object... vars) {
-        return new PostingRequest(this, "OPTIONS", template.process(vars));
+        return new PostingRequest(this, "OPTIONS", template.expand(vars));
     }
 
     public PostingRequest options(final String uri, final Vars vars) {
@@ -136,7 +136,7 @@ public class HttpTemplate {
     }
 
     public PostingRequest options(final UriTemplate template, final Vars vars) {
-        return new PostingRequest(this, "OPTIONS", template.process(vars));
+        return new PostingRequest(this, "OPTIONS", template.expand(vars));
     }
 
     public PostingRequest request(final String method, final String uri, final Object... vars) {
@@ -148,11 +148,11 @@ public class HttpTemplate {
     }
 
     public PostingRequest request(final String method, final UriTemplate template, final Object... vars) {
-        return new PostingRequest(this, method, template.process(vars));
+        return new PostingRequest(this, method, template.expand(vars));
     }
 
     public PostingRequest request(final String method, final UriTemplate template, final Vars vars) {
-        return new PostingRequest(this, method, template.process(vars));
+        return new PostingRequest(this, method, template.expand(vars));
     }
 
     /**
