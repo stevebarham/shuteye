@@ -1,5 +1,7 @@
 Shuteye
 =======
+**Like JdbcTemplate, but for HTTP, with no runtime dependencies**
+
 Shuteye is a library to build RESTful API clients. It has no dependencies other than the JRE. It implements
 [RFC 6570](https://tools.ietf.org/html/rfc6570) for URI template construction, and provides a fluent API to
 execute HTTP requests.
@@ -51,49 +53,7 @@ Features
 1. Shuteye supports compilation of templates for efficient reuse
 
 ### HTTP Requests
-
-1. Fluent API for constructing requests
-1. Support for form-style POST requests
-1. Support for raw (entity-based) POST requests
-1. Simple extension via ResponseTransformer to extract responses
-1. Support for GZIP compressed responses
-
-Code Example
-------------
-
-### Constructing a URI template
-Templates can be parsed and processed in a single step, by passing the variables alongside the template, either
-as varargs parameters, or via a simple wrapper around a Map
-
-    String uri = UriTemplate.process("https://api.github.com/repos{/user,repo,function,id}", Vars.wrap(vars));
-    String uri2 = UriTemplate.process("https://api.github.com/repos{/user,repo,function,id}", "stevebarham", "jcodemodel", "commits");
-
-Both of these methods will produce the following URI:
-
-    https://api.github.com/repos/stevebarham/jcodemodel/commits
-
-### Compiling a URI template, and processing it with different variables
-When a template will be used multiple times, it's probably more efficient to compile it in advance, then just
-process it with different variables.
-
-    UriTemplate template = UriTemplate.parse("https://api.github.com/repos{/user,repo,function,id}");
-
-    Map<String, Object> vars = new HashMap<>();
-    vars.put("user", "stevebarham");
-    vars.put("repo", "jcodemodel");
-    vars.put("function", "commits");
-    String uri1 = template.process(Vars.wrap(vars));
-
-    vars.put("user", "phax");
-    String uri2 = template.process(Vars.wrap(vars));
-
-This produces the following URIs:
-
-    https://api.github.com/repos/stevebarham/jcodemodel/commits
-    https://api.github.com/repos/phax/jcodemodel/commits
-
-### Making an HTTP request
-todo: document. See ShuteyeTest for the moment.
+todo
 
 Installation
 ------------
@@ -106,7 +66,7 @@ todo - write JavaDoc, publish, link
 Tests
 -----
 Shuteye has excellent code coverage. URI templates are tested via the [uritemplate-test](https://github.com/uri-templates/uritemplate-test)
-test project. HTTP client testing uses [httpbin](http://httpbin.org).
+test project. HTTP template testing uses [httpbin](http://httpbin.org).
 
 To run the tests, check out the project, and run the Maven test goal:
 
