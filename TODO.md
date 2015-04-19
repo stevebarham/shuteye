@@ -3,5 +3,16 @@
 * get travis back online
 * handle redirects
 * check all public classes for appropriate equals, hashcode, tostring
-* document all options
+* document all config
 * readme
+* check implementation for http keep alives
+* basic authentication
+
+examples
+========
+
+* gets
+* sending fields via posts 
+* sending files via posts - encoding, streams, etc
+* transforming responses - default transformer, specific character set
+*  
