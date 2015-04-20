@@ -15,13 +15,10 @@ Installation
 Add the following Maven dependency to use Shuteye:
 
     <dependency>
-        <groupId>${project.groupId}</groupId>
+        <groupId>net.ethx.shuteye</groupId>
         <artifactId>shuteye</artifactId>
-        <version>${project.version}</version>
+        <version>0.2.1</version>
     </dependency>
-
-Examples
---------
 
 
 Tests
