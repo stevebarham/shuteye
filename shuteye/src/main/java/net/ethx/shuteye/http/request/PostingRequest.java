@@ -2,6 +2,7 @@ package net.ethx.shuteye.http.request;
 
 import net.ethx.shuteye.HttpTemplate;
 import net.ethx.shuteye.http.ContentType;
+import net.ethx.shuteye.http.except.ShuteyeException;
 import net.ethx.shuteye.util.Preconditions;
 
 import java.io.*;
@@ -68,8 +69,12 @@ public class PostingRequest extends Request {
      *
      * @see #field(String, String, InputStream, ContentType)
      */
-    public PostingRequest field(final String field, final File file) throws FileNotFoundException {
-        return field(field, file.getName(), new FileInputStream(file));
+    public PostingRequest field(final String field, final File file) {
+        try {
+            return field(field, file.getName(), new FileInputStream(file));
+        } catch (FileNotFoundException e) {
+            throw new ShuteyeException("Could not attach " + file, e);
+        }
     }
 
     /**
@@ -100,8 +105,12 @@ public class PostingRequest extends Request {
      *
      * @see #body(InputStream, ContentType)
      */
-    public PostingRequest body(final File file) throws FileNotFoundException {
-        return body(new FileInputStream(file), guessContentType(file.getName()));
+    public PostingRequest body(final File file) {
+        try {
+            return body(new FileInputStream(file), guessContentType(file.getName()));
+        } catch (FileNotFoundException e) {
+            throw new ShuteyeException("Could not attach " + file, e);
+        }
     }
 
     /**

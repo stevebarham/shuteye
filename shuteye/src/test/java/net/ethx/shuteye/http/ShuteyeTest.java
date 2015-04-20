@@ -185,7 +185,7 @@ public class ShuteyeTest {
                 if (response.isError()) {
                     throw new IllegalStateException(response.statusCode() + " - " + response.statusText());
                 }
-                return new ObjectMapper().readTree(response.stream());
+                return new ObjectMapper().readTree(response.inputStream());
             }
         };
     }

@@ -6,45 +6,23 @@ Shuteye is a library to build RESTful API clients. It has no dependencies other 
 [RFC 6570](https://tools.ietf.org/html/rfc6570) for URI template construction, and provides a fluent API to
 execute HTTP requests.
 
-[![Build Status](https://travis-ci.org/stevebarham/shuteye.svg?branch=master)](https://travis-ci.org/stevebarham/shuteye)
-
-Motivation
-----------
-Shuteye's design goal is to provide a library which:
-
-* Is self-contained
-* Can be safely shaded, to provide isolation of client access code
-
-Shuteye only depends on classes provided by the JRE. There are no external dependencies.
-
-When using Shuteye, you are encouraged (though not required) to shade and relocate the Shuteye classes into your
-own library, via the maven-shade-plugin. This removes the chance of Shuteye conflicting with any other code in your
-library - even if a different version of Shuteye is used elsewhere by another library.
-
-Consumers of Shuteye are not forced to use any additional dependencies, or pinned to a particular version of a
-transitive dependency.
-
 No dependency tree hell, no version conflicts, no spooky side effects. Just clean, fast, simple code.
 
-Features
---------
-
-### URI Templates
-
-1. Shuteye implements RFC 6570 to level-4
-1. Shuteye passes all tests in [uritemplate-test](https://github.com/uri-templates/uritemplate-test)
-1. Shuteye supports compilation of templates for efficient reuse
-
-### HTTP Requests
-todo
+[![Build Status](https://travis-ci.org/stevebarham/shuteye.svg?branch=master)](https://travis-ci.org/stevebarham/shuteye)
 
 Installation
 ------------
-todo - Maven central, standard dependency fragment
+Add the following Maven dependency to use Shuteye:
 
-API Reference
--------------
-todo - write JavaDoc, publish, link
+    <dependency>
+        <groupId>${project.groupId}</groupId>
+        <artifactId>shuteye</artifactId>
+        <version>${project.version}</version>
+    </dependency>
+
+Examples
+--------
+
 
 Tests
 -----

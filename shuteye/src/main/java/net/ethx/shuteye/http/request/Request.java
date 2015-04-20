@@ -82,6 +82,14 @@ public class Request {
     }
 
     /**
+     * Executes the request via {@link #execute()}, and returns the text value of the response.
+     * @see Response#textValue()
+     */
+    public String textValue() {
+        return execute().textValue();
+    }
+
+    /**
      * Executes the request.
      *
      * @return a {@link Response} object with the result of executing this request.
