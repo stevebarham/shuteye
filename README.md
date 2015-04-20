@@ -15,23 +15,6 @@ Shuteye's design goal is to provide a library which:
 * Is self-contained
 * Can be safely shaded, to provide isolation of client access code
 
-Many libraries exist which can be used to build REST clients in Java. Unfortunately, most of these libraries have
-characteristics which make them unsuitable for building client access libraries.
-
-* Require additional dependencies
-* Cannot be included or used in isolation
-
-Other libraries pull in large trees of dependencies; there is nothing inherently wrong with code reuse, but
-when building a client access library, every additional dependency adds both size and complexity.
-
-For example, if you decide to use RESTEasy or Jersey to build a client access library, each will attempt to register
-itself as the de-facto implementation of JAX-RS in the executing VM. If another client access library is using a
- different implementation, you will likely encounter issues.
-
-If you decide to use Unirest, you have committed to bringing in specific versions of httpclient, httpasyncclient,
-httpmime, and json - plus all of their transitive dependencies.
-
-### Shuteye is different
 Shuteye only depends on classes provided by the JRE. There are no external dependencies.
 
 When using Shuteye, you are encouraged (though not required) to shade and relocate the Shuteye classes into your

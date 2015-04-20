@@ -6,17 +6,11 @@ import net.ethx.shuteye.http.except.ShuteyeException;
 import net.ethx.shuteye.http.response.Response;
 import net.ethx.shuteye.http.response.ResponseTransformer;
 import net.ethx.shuteye.util.Preconditions;
-import net.ethx.shuteye.util.Streams;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.zip.DeflaterInputStream;
-import java.util.zip.GZIPOutputStream;
 
 /**
  * Class modelling an HTTP request. You should not instantiate this class directly, but use the creation methods
@@ -93,59 +87,7 @@ public class Request {
      * @return a {@link Response} object with the result of executing this request.
      */
     public Response execute() {
-        try {
-            final HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-            connection.setRequestMethod(method());
-            connection.setInstanceFollowRedirects("GET".equals(method()));
-            connection.setConnectTimeout(context.config().getConnectTimeoutMillis());
-            connection.setReadTimeout(context.config().getReadTimeoutMillis());
-
-            for (String header : headers.headerNames()) {
-                for (String value : headers.all(header)) {
-                    connection.addRequestProperty(header, value);
-                }
-            }
-
-            writeEntity(connection);
-
-            try {
-                final int statusCode = connection.getResponseCode();
-                final String statusText = connection.getResponseMessage();
-                final Headers responseHeaders = new Headers(connection.getHeaderFields());
-
-                final ByteArrayOutputStream out = new ByteArrayOutputStream();
-                final String encoding = responseHeaders.first("Content-Encoding");
-
-                //  todo: follow redirects
-                final InputStream encoded = statusCode < 400 ? connection.getInputStream() : connection.getErrorStream();
-                if (encoded != null) {
-                    final InputStream source;
-                    final OutputStream dest;
-                    if ("gzip".equalsIgnoreCase(encoding)) {
-                        source = encoded;
-                        dest = out;
-                    } else if ("deflate".equalsIgnoreCase(encoding)) {
-                        source = new DeflaterInputStream(encoded);
-                        dest = new GZIPOutputStream(out);
-                    } else {
-                        source = encoded;
-                        dest = new GZIPOutputStream(out);
-                    }
-                    try {
-                        Streams.copy(source, dest);
-                    } finally {
-                        source.close();
-                        dest.close();
-                    }
-                }
-
-                return new Response(statusCode, statusText, responseHeaders, out.toByteArray());
-            } finally {
-                connection.disconnect();
-            }
-        } catch (IOException ie) {
-            throw new ShuteyeException(String.format("Could not execute request to %s", url), ie);
-        }
+        return new RequestProcessor(context, this).execute();
     }
 
     protected void writeEntity(final HttpURLConnection connection) throws IOException {
@@ -171,4 +113,5 @@ public class Request {
     public Headers headers() {
         return headers;
     }
+
 }

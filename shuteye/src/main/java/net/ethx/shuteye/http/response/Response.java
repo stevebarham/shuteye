@@ -33,7 +33,7 @@ public class Response {
         this.statusCode = statusCode;
         this.statusText = statusText;
         this.headers = headers;
-        this.compressedBody = Arrays.copyOf(compressedBody, compressedBody.length);
+        this.compressedBody = compressedBody == null ? null : Arrays.copyOf(compressedBody, compressedBody.length);
     }
 
     /**
@@ -41,6 +41,13 @@ public class Response {
      */
     public boolean isError() {
         return statusCode >= 400;
+    }
+
+    /*
+     * @return true if any data has been extracted from the HTTP response
+     */
+    public boolean hasData() {
+        return compressedBody != null;
     }
 
     /**
@@ -68,9 +75,10 @@ public class Response {
      * @return A new stream over the response. This stream does not need to be decompressed when the server returns deflate
      * or gzip encoded data, as these are handled transparently.
      * @throws IOException If the stream could not be created
+     * @throws NullPointerException If no data was extracted from the response
      */
     public InputStream stream() throws IOException {
-        return new GZIPInputStream(new ByteArrayInputStream(compressedBody));
+        return compressedBody == null ? EofStream.INSTANCE : new GZIPInputStream(new ByteArrayInputStream(compressedBody));
     }
 
     /**
@@ -97,6 +105,15 @@ public class Response {
             return transformer.transform(this);
         } catch (IOException e) {
             throw new ShuteyeException(String.format("Could not convert response using %s", transformer), e);
+        }
+    }
+
+    private static class EofStream extends InputStream {
+        static final EofStream INSTANCE = new EofStream();
+
+        @Override
+        public int read() throws IOException {
+            return -1;
         }
     }
 }
