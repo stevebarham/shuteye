@@ -52,10 +52,10 @@ public abstract class Transformers {
             if (contentType != null) {
                 final Matcher matcher = charset.matcher(contentType);
                 if (matcher.find()) {
-                    return Streams.toString(response.stream(), Charset.forName(matcher.group(1)));
+                    return Streams.toString(response.inputStream(), Charset.forName(matcher.group(1)));
                 }
             }
-            return Streams.toString(response.stream(), Charset.defaultCharset());
+            return Streams.toString(response.inputStream(), Charset.defaultCharset());
         }
     }
 
@@ -68,7 +68,7 @@ public abstract class Transformers {
 
         @Override
         protected String handle(final Response response) throws IOException {
-            return Streams.toString(response.stream(), charset);
+            return Streams.toString(response.inputStream(), charset);
         }
 
         @Override

@@ -12,7 +12,7 @@ import java.util.zip.GZIPInputStream;
 
 /**
  * Class modelling an HTTP response. This class buffers the data returned by the server in a gzipped byte array. This means
- * that methods like {@link #textValue()} and {@link #stream()} may be called repeatedly.
+ * that methods like {@link #textValue()} and {@link #inputStream()} may be called repeatedly.
  */
 public class Response {
     private final int statusCode;
@@ -77,7 +77,7 @@ public class Response {
      * @throws IOException If the stream could not be created
      * @throws NullPointerException If no data was extracted from the response
      */
-    public InputStream stream() throws IOException {
+    public InputStream inputStream() throws IOException {
         return compressedBody == null ? EofStream.INSTANCE : new GZIPInputStream(new ByteArrayInputStream(compressedBody));
     }
 

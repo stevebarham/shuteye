@@ -10,7 +10,7 @@ import org.junit.Test;
 
 import java.io.IOException;
 
-public class JsonJackson {
+public class JsonResponse {
     @Test
     public void test() {
         final HttpTemplate template = new HttpTemplate();
@@ -23,7 +23,7 @@ public class JsonJackson {
         return SuccessTransformer.onSuccess(new ResponseTransformer<JsonNode>() {
             @Override
             public JsonNode transform(final Response response) throws IOException {
-                return new ObjectMapper().readTree(response.stream());
+                return new ObjectMapper().readTree(response.inputStream());
             }
         });
     }
