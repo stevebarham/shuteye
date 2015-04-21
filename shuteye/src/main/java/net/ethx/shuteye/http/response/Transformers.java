@@ -32,7 +32,7 @@ public abstract class Transformers {
      * @return a {@link SuccessTransformer} which does not return any value when invoked from a successful response, but
      * which throws a suitable exception for HTTP errors.
      */
-    public static SuccessTransformer<Void> requringSuccess() {
+    public static SuccessTransformer<Void> requiringSuccess() {
         return new RequiringSuccessTransformer();
     }
 
