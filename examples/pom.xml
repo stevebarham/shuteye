@@ -5,7 +5,7 @@
     <parent>
         <groupId>net.ethx.shuteye</groupId>
         <artifactId>shuteye-pom</artifactId>
-        <version>0.2.2-SNAPSHOT</version>
+        <version>0.3.0-SNAPSHOT</version>
     </parent>
 
     <artifactId>examples</artifactId>

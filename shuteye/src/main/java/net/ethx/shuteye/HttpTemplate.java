@@ -19,10 +19,6 @@ public class HttpTemplate {
         this.uriTemplateCompiler = new UriTemplateCompiler(config);
     }
 
-    public UriTemplateCompiler uriTemplateCompiler() {
-        return uriTemplateCompiler;
-    }
-
     public ShuteyeConfig config() {
         return config;
     }

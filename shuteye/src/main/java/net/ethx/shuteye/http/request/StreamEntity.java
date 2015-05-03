@@ -24,6 +24,5 @@ class StreamEntity implements Entity {
 
         final OutputStream out = connection.getOutputStream();
         Streams.copy(stream, out);
-        out.flush();
     }
 }

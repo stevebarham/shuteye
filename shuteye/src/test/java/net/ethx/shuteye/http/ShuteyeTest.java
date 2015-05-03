@@ -4,8 +4,10 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import net.ethx.shuteye.HttpTemplate;
 import net.ethx.shuteye.http.except.ResponseException;
+import net.ethx.shuteye.http.response.BufferedResponse;
 import net.ethx.shuteye.http.response.Response;
-import net.ethx.shuteye.http.response.ResponseTransformer;
+import net.ethx.shuteye.http.response.TypedResponse;
+import net.ethx.shuteye.http.response.trans.Transformer;
 import net.ethx.shuteye.util.Encodings;
 import net.iharder.Base64;
 import org.junit.Before;
@@ -13,13 +15,15 @@ import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
 import java.util.UUID;
 
-import static net.ethx.shuteye.http.response.Transformers.string;
+import static net.ethx.shuteye.http.response.trans.Transformers.requiringSuccess;
+import static net.ethx.shuteye.http.response.trans.Transformers.string;
 import static org.junit.Assert.*;
 
 public class ShuteyeTest {
@@ -36,7 +40,7 @@ public class ShuteyeTest {
     public void error() {
         for (int i = 400; i < 700; i += 100) {
             final Response response = template.get(BASE_URI + "/status/{code}", i)
-                                              .execute();
+                                              .fetch();
 
             assertTrue(response.isError());
         }
@@ -44,43 +48,57 @@ public class ShuteyeTest {
 
     @Test
     public void get() {
-        final Response response = template.get(BASE_URI).execute();
+        final Response response = template.get(BASE_URI)
+                                          .fetch();
         assertOK(response);
     }
 
     @Test
     public void redirect() {
-        final Response response = template.get(BASE_URI + "/redirect/2").execute();
+        final Response response = template.get(BASE_URI + "/redirect/2").fetch();
         assertOK(response);
     }
 
     @Test
     public void gzip() throws IOException {
-        final JsonNode json = template.get(BASE_URI + "/gzip").as(json());
-        assertEquals(true, json.get("gzipped").booleanValue());
+        final TypedResponse<JsonNode> response = template.get(BASE_URI + "/gzip")
+                                                         .execute(json());
+
+        assertOK(response);
+        assertEquals(true, response.value().get("gzipped").booleanValue());
+    }
+
+    @Test
+    public void deflate() throws IOException {
+        final TypedResponse<JsonNode> response = template.get(BASE_URI + "/deflate")
+                                                         .execute(json());
+
+        assertOK(response);
+        assertEquals(true, response.value().get("deflated").booleanValue());
     }
 
     @Test
     public void statusCode() {
         for (int i = 200; i < 210; i++) {
             assertEquals(i, template.get(BASE_URI + "/status/{code}", i)
-                                    .execute().statusCode());
+                                    .fetch()
+                                    .statusCode());
         }
     }
 
     @Test
     public void bodyTextValue() throws IOException {
-        assertTrue(template.get(BASE_URI).execute().textValue().contains("<html"));
+        assertTrue(template.get(BASE_URI).fetch().textValue().contains("<html"));
     }
 
     @Test
     public void requestHeaders() throws IOException {
         final UUID uuid = UUID.randomUUID();
 
-        final Response response = template.get(BASE_URI + "/headers")
-                                          .header("Foo", "bar")
-                                          .header("Uuid", uuid.toString())
-                                          .execute();
+        final BufferedResponse response = template.get(BASE_URI + "/headers")
+                                                  .header("Foo", "bar")
+                                                  .header("Uuid", uuid.toString())
+                                                  .fetch();
         assertOK(response);
 
         final JsonNode json = response.as(json());
@@ -97,7 +115,7 @@ public class ShuteyeTest {
         args.put("uuid", uuid.toString());
 
         final Response response = template.get(BASE_URI + "/response-headers{?args*}", args)
-                                          .execute();
+                                          .fetch();
 
         assertOK(response);
         assertEquals("bar", response.headers().first("foo"));
@@ -147,7 +165,8 @@ public class ShuteyeTest {
 
     @Test(expected = ResponseException.class)
     public void failure() {
-        template.get(BASE_URI + "/status/{code}", 404).as(string());
+        template.get(BASE_URI + "/status/{code}", 404)
+                .as(string());
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -172,20 +191,26 @@ public class ShuteyeTest {
         assertEquals(explicit, implicit);
     }
 
+    @Test
+    public void requiringSuccessTransformer() {
+        template.get(BASE_URI)
+                .as(requiringSuccess());
+    }
+
     private void assertOK(final Response response) {
         assertEquals(200, response.statusCode());
         assertEquals("OK", response.statusText());
         assertFalse(response.isError());
     }
 
-    public static ResponseTransformer<JsonNode> json() {
-        return new ResponseTransformer<JsonNode>() {
+    public static Transformer<JsonNode> json() {
+        return new Transformer<JsonNode>() {
             @Override
-            public JsonNode transform(final Response response) throws IOException {
+            public JsonNode transform(final Response response, final InputStream stream) throws IOException {
                 if (response.isError()) {
                     throw new IllegalStateException(response.statusCode() + " - " + response.statusText());
                 }
-                return new ObjectMapper().readTree(response.inputStream());
+                return new ObjectMapper().readTree(stream);
             }
         };
     }

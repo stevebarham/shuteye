@@ -1,9 +1,19 @@
 package net.ethx.shuteye;
 
 import net.ethx.shuteye.http.ContentType;
+import net.ethx.shuteye.http.response.BufferedResponse;
+import net.ethx.shuteye.http.response.codec.Codec;
+import net.ethx.shuteye.http.response.codec.DeflateCodec;
+import net.ethx.shuteye.http.response.codec.GzipCodec;
 import net.ethx.shuteye.util.Encodings;
 
 import java.nio.charset.Charset;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+
+import static net.ethx.shuteye.util.Preconditions.checkNotNull;
 
 public class ShuteyeConfig {
     public abstract static class Defaults {
@@ -16,6 +26,8 @@ public class ShuteyeConfig {
         public static final boolean ALLOW_MISSING_VARS_IN_VARARG = false;
         public static final boolean ALLOW_EXTRA_VARS_IN_MAP = true;
         public static final boolean ALLOW_MISSING_VARS_IN_MAP = false;
+        public static final List<Codec> CODECS = Collections.unmodifiableList(Arrays.asList(new GzipCodec(), new DeflateCodec()));
+        public static final Codec BUFFER_CODEC = new GzipCodec();
     }
 
     private int connectTimeoutMillis = Defaults.CONNECT_TIMEOUT_MILLIS;
@@ -28,6 +40,9 @@ public class ShuteyeConfig {
     private boolean allowMissingVarsInVararg = Defaults.ALLOW_MISSING_VARS_IN_VARARG;
     private boolean allowExtraVarsInMap = Defaults.ALLOW_EXTRA_VARS_IN_MAP;
     private boolean allowMissingVarsInMap = Defaults.ALLOW_MISSING_VARS_IN_MAP;
+
+    private List<Codec> codecs = Defaults.CODECS;
+    private Codec bufferCodec = Defaults.BUFFER_CODEC;
 
     /**
      * Gets the connect timeout in milliseconds which will be passed to {@link java.net.HttpURLConnection#setConnectTimeout(int)}
@@ -75,7 +90,7 @@ public class ShuteyeConfig {
      * @see #getDefaultStringContentType()
      */
     public void setDefaultStringContentType(final ContentType defaultStringContentType) {
-        this.defaultStringContentType = defaultStringContentType;
+        this.defaultStringContentType = checkNotNull(defaultStringContentType, "Null default string content type is not allowed");
     }
 
     /**
@@ -90,7 +105,7 @@ public class ShuteyeConfig {
      * @see #getDefaultStringEncoding()
      */
     public void setDefaultStringEncoding(final Charset defaultStringEncoding) {
-        this.defaultStringEncoding = defaultStringEncoding;
+        this.defaultStringEncoding = checkNotNull(defaultStringEncoding, "Null default string encoding is not allowed");
     }
 
     /**
@@ -105,7 +120,7 @@ public class ShuteyeConfig {
      * @see #getDefaultStreamContentType()
      */
     public void setDefaultStreamContentType(final ContentType defaultStreamContentType) {
-        this.defaultStreamContentType = defaultStreamContentType;
+        this.defaultStreamContentType = checkNotNull(defaultStreamContentType, "Null default stream content type is not allowed");
     }
 
     /**
@@ -186,5 +201,40 @@ public class ShuteyeConfig {
         } catch (CloneNotSupportedException unexpected) {
             throw new IllegalStateException("Could not clone " + getClass().getSimpleName(), unexpected);
         }
+    }
+
+    /**
+     * @return The codecs which are supported for Shuteye.
+     */
+    public List<Codec> getCodecs() {
+        return Collections.unmodifiableList(codecs);
+    }
+
+    /**
+     * @see #getCodecs()
+     */
+    public void setCodecs(final List<Codec> codecs) {
+        this.codecs = Collections.unmodifiableList(checkNotNull(codecs, "Null codecs are not allowed"));
+    }
+
+    public void addCodec(final Codec codec) {
+        final List<Codec> codecs = new ArrayList<Codec>(getCodecs());
+        codecs.add(checkNotNull(codec, "Null codec is not allowed"));
+        this.codecs = Collections.unmodifiableList(codecs);
+    }
+
+    /**
+     * @return The codec which will be used by default when creating {@link BufferedResponse}
+     * from a request.
+     */
+    public Codec getBufferCodec() {
+        return bufferCodec;
+    }
+
+    /**
+     * @see #getBufferCodec()
+     */
+    public void setBufferCodec(final Codec bufferCodec) {
+        this.bufferCodec = checkNotNull(bufferCodec, "Null buffer codec is not allowed");
     }
 }

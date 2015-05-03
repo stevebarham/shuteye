@@ -1,35 +1,32 @@
 package net.ethx.shuteye.http.request;
 
-import net.ethx.shuteye.HttpTemplate;
 import net.ethx.shuteye.http.Headers;
 import net.ethx.shuteye.http.except.ShuteyeException;
 import net.ethx.shuteye.http.response.Response;
+import net.ethx.shuteye.http.response.codec.Codec;
+import net.ethx.shuteye.http.response.trans.Transformer;
 import net.ethx.shuteye.util.Streams;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.HttpURLConnection;
-import java.util.zip.DeflaterInputStream;
-import java.util.zip.GZIPOutputStream;
 
-class RequestProcessor {
-    private final HttpTemplate template;
+class RequestProcessor<T> {
     private final Request request;
+    private final Transformer<T> transformer;
 
-    public RequestProcessor(final HttpTemplate template, Request request) {
+    public RequestProcessor(final Request request, final Transformer<T> transformer) {
         this.request = request;
-        this.template = template;
+        this.transformer = transformer;
     }
 
-    public Response execute() {
+    public T execute() {
         try {
             final HttpURLConnection connection = (HttpURLConnection) request.url().openConnection();
             connection.setRequestMethod(request.method());
             connection.setInstanceFollowRedirects("GET".equals(request.method()));
-            connection.setConnectTimeout(template.config().getConnectTimeoutMillis());
-            connection.setReadTimeout(template.config().getReadTimeoutMillis());
+            connection.setConnectTimeout(request.template().config().getConnectTimeoutMillis());
+            connection.setReadTimeout(request.template().config().getReadTimeoutMillis());
 
             for (String header : request.headers().headerNames()) {
                 for (String value : request.headers().all(header)) {
@@ -38,58 +35,57 @@ class RequestProcessor {
             }
 
             request.writeEntity(connection);
-
             try {
                 final int statusCode = connection.getResponseCode();
                 final String statusText = connection.getResponseMessage();
                 final Headers responseHeaders = new Headers(connection.getHeaderFields());
-                final String encoding = responseHeaders.first("Content-Encoding");
+                final Response response = new Response(statusCode, statusText, responseHeaders);
 
-                byte[] response;
                 try {
-                    response = extractStream(connection.getInputStream(), encoding);
-                } catch (IOException ie) {
-                    response = extractStream(connection.getErrorStream(), encoding);
+                    final InputStream input = connection.getInputStream();
+                    try {
+                        return execute(request, response, input);
+                    } finally {
+                        Streams.drain(input);
+                    }
+                } catch (IOException e) {
+                    final InputStream error = connection.getErrorStream();
+                    try {
+                        return execute(request, response, connection.getErrorStream());
+                    } finally {
+                        Streams.drain(error);
+                    }
                 }
-
-                return new Response(statusCode, statusText, responseHeaders, response);
             } finally {
                 connection.disconnect();
             }
         } catch (IOException ie) {
-            throw new ShuteyeException(String.format("Could not execute request to %s", request.url()), ie);
+            throw new ShuteyeException(String.format("Could not buffer request to %s", request.url()), ie);
         }
     }
 
-    private byte[] extractStream(final InputStream stream, final String encoding) throws IOException {
-        if (stream != null) {
-            final ByteArrayOutputStream out = new ByteArrayOutputStream();
+    protected T execute(final Request request, final Response response, final InputStream stream) throws IOException {
+        InputStream decoded;
+        if (stream == null) {
+            decoded = Streams.empty();
+        } else {
+            decoded = stream;
 
-            final InputStream source;
-            final OutputStream dest;
-            if ("gzip".equalsIgnoreCase(encoding)) {
-                source = stream;
-                dest = out;
-            } else if ("deflate".equalsIgnoreCase(encoding)) {
-                source = new DeflaterInputStream(stream);
-                dest = new GZIPOutputStream(out);
-            } else {
-                source = stream;
-                dest = new GZIPOutputStream(out);
-            }
-            try {
-                try {
-                    Streams.copy(source, dest);
-                } finally {
-                    dest.close();
+            final String encoding = response.headers().first("Content-Encoding");
+            if (encoding != null) {
+                for (Codec codec : request.template().config().getCodecs()) {
+                    if (encoding.equals(codec.name())) {
+                        decoded = codec.decode(stream);
+                        break;
+                    }
                 }
-            } finally {
-                source.close();
             }
-
-            return out.toByteArray();
         }
 
-        return null;
+        try {
+            return transformer.transform(response, decoded);
+        } catch (IOException e) {
+            throw new ShuteyeException(String.format("Could not convert response using %s", transformer), e);
+        }
     }
 }

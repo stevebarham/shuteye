@@ -10,17 +10,23 @@ import java.util.*;
  */
 public class Headers {
     private final Map<String, List<String>> headers;
+    private final Map<String, String> normalizedKeys = new HashMap<String, String>();
 
     public Headers(final Map<String, List<String>> headers) {
         this.headers = new LinkedHashMap<String, List<String>>(headers);
+        for (String header : headers.keySet()) {
+            if (header != null) {
+                this.normalizedKeys.put(header.toLowerCase(), header);
+            }
+        }
     }
 
     /**
      * @param header Header name to retrieve
-     * @return The first value for the specified header in the collection, or null if no such values exist.
+     * @return The first typedResponse for the specified header in the collection, or null if no such values exist.
      */
     public String first(final String header) {
-        final List<String> values = headers.get(header);
+        final List<String> values = headers.get(normalizedKey(header));
         return values == null || values.isEmpty() ? null : values.get(0);
     }
 
@@ -29,7 +35,7 @@ public class Headers {
      * @return All configured values for the specified header in the collection, or an empty list if no such values exist.
      */
     public List<String> all(final String header) {
-        final List<String> values = headers.get(header);
+        final List<String> values = headers.get(normalizedKey(header));
         return values == null ? Collections.<String>emptyList() : Collections.unmodifiableList(values);
     }
 
@@ -46,5 +52,10 @@ public class Headers {
             headers.put(header, values = new ArrayList<String>());
         }
         values.add(value);
+    }
+
+    private String normalizedKey(final String header) {
+        final String key = normalizedKeys.get(header.toLowerCase());
+        return key == null ? header : key;
     }
 }
