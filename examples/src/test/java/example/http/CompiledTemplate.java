@@ -4,7 +4,7 @@ import net.ethx.shuteye.HttpTemplate;
 import net.ethx.shuteye.uri.UriTemplate;
 import org.junit.Test;
 
-import static net.ethx.shuteye.http.response.Transformers.string;
+import static net.ethx.shuteye.http.response.trans.Transformers.string;
 
 /**
  * Demonstrates reuse of a compiled {@link net.ethx.shuteye.uri.UriTemplate} with {@link net.ethx.shuteye.HttpTemplate}
