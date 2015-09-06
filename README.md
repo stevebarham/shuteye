@@ -17,9 +17,8 @@ Add the following Maven dependency to use Shuteye:
     <dependency>
         <groupId>net.ethx.shuteye</groupId>
         <artifactId>shuteye</artifactId>
-        <version>0.2.1</version>
+        <version>0.3.0</version>
     </dependency>
-
 
 Tests
 -----
