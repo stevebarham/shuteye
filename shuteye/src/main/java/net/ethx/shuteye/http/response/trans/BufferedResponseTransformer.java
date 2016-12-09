@@ -27,38 +27,19 @@ class BufferedResponseTransformer implements Transformer<BufferedResponse> {
             return new BufferedResponse(response, null);
         }
 
-        final ByteArrayOutputStream out = new ByteArrayOutputStream();
-        InputStream source = null;
-        OutputStream dest = null;
-
         final String encoding = response.headers().first("Content-Encoding");
-        if (bufferCodec.name().equals(encoding)) {
-            source = stream;
-            dest = out;
-        } else {
-            for (Iterator<Codec> iterator = codecs.iterator(); source == null && iterator.hasNext(); ) {
-                final Codec codec = iterator.next();
-                if (codec.name().equals(encoding)) {
-                    source = codec.decode(stream);
-                    dest = bufferCodec.encode(out);
-                }
-            }
-
-            if (source == null) {
-                source = stream;
-                dest = bufferCodec.encode(out);
-            }
-        }
+        final ByteArrayOutputStream out = new ByteArrayOutputStream();
+        final OutputStream dest = bufferCodec.name().equals(encoding) ? out : bufferCodec.encode(out);
 
         try {
             try {
-                Streams.copy(source, dest);
+                Streams.copy(stream, dest);
             } finally {
                 dest.close();
             }
             return new BufferedResponse(response, bufferCodec, out.toByteArray());
         } finally {
-            source.close();
+            stream.close();
         }
     }
 }
