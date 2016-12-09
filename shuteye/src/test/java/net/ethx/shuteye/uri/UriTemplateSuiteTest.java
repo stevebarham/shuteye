@@ -13,12 +13,12 @@ import java.io.IOException;
 import java.util.*;
 
 @RunWith(Parameterized.class)
-public class UriTemplateTestSuite {
+public class UriTemplateSuiteTest {
     public static final String SPEC_ROOT = "../uritemplate-test";
 
     private final UriTemplateTestCase testcase;
 
-    public UriTemplateTestSuite(final UriTemplateTestCase testcase) {
+    public UriTemplateSuiteTest(final UriTemplateTestCase testcase) {
         this.testcase = testcase;
     }
 
